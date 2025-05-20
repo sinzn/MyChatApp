@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title>Chat App</title>
 </head>
-<body id="body" style="margin-left: 30px; padding: 10px; background: #ffffff; color: #000000; transition: background 0.3s, color 0.3s;">
+
+<body id="body"
+  style="margin-left: 30px; padding: 10px; background: #ffffff; color: #000000; transition: background 0.3s, color 0.3s;">
 
   <div style="display: inline-block;">
-    <h2><font size="5">Simple Chat</font></h2>
+    <h2>
+      <font size="5">Simple Chat</font>
+    </h2>
 
     <!-- Buttons and DateTime -->
     <div style="display: flex; align-items: center; gap: 10px;">
@@ -21,7 +26,9 @@
 
     <form id="form" autocomplete="off">
       <input id="input" placeholder="Type a message..." size="20" style="height:15px;" />
-      <button><font size="2">Send</font></button>
+      <button>
+        <font size="2">Send</font>
+      </button>
     </form>
 
     <br><br>
@@ -41,26 +48,30 @@
     let darkMode = false;
     let spacePressed = false;
 
-    // Send chat
-    form.addEventListener('submit', function(e) {
+    // Get room from URL path (e.g. /room123)
+    const room = window.location.pathname.substring(1) || 'default';
+    socket.emit('join room', room);
+
+    // Send message
+    form.addEventListener('submit', function (e) {
       e.preventDefault();
       if (input.value) {
-        socket.emit('chat message', input.value);
+        socket.emit('chat message', { room, msg: input.value });
         input.value = '';
       }
     });
 
-    // Display message (newest on top)
-    socket.on('chat message', function(msg) {
+    // Receive message (latest on top)
+    socket.on('chat message', function (data) {
       const item = document.createElement('div');
-      item.innerHTML = "<font size='4'>" + msg + "</font><br><br>";
-      messages.insertBefore(item, messages.firstChild); // Newest at top
+      item.innerHTML = "<font size='4'>" + data.msg + "</font><br>";
+      messages.insertBefore(item, messages.firstChild);
     });
 
     // Fullscreen toggle
     function toggleFullScreen() {
       if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch((err) => {
+        document.documentElement.requestFullscreen().catch(err => {
           alert(`Error attempting fullscreen: ${err.message}`);
         });
       } else {
@@ -71,18 +82,12 @@
     // Theme toggle
     function toggleTheme() {
       darkMode = !darkMode;
-      if (darkMode) {
-        body.style.background = "#121212";
-        body.style.color = "#ffffff";
-        themeBtn.innerText = "🌞";
-      } else {
-        body.style.background = "#ffffff";
-        body.style.color = "#000000";
-        themeBtn.innerText = "🌙";
-      }
+      body.style.background = darkMode ? "#121212" : "#ffffff";
+      body.style.color = darkMode ? "#ffffff" : "#000000";
+      themeBtn.innerText = darkMode ? "🌞" : "🌙";
     }
 
-    // Date and Time updater
+    // Date and Time
     function updateDateTime() {
       const now = new Date();
       let hours = now.getHours();
@@ -90,15 +95,14 @@
       let seconds = now.getSeconds();
       const ampm = hours >= 12 ? 'PM' : 'AM';
       hours = hours % 12 || 12;
-      const time = `${now.getMonth()+1}/${now.getDate()}/${now.getFullYear()} ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} ${ampm}`;
+      const time = `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()} ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} ${ampm}`;
       document.getElementById('dateTime').innerText = time;
     }
-
     setInterval(updateDateTime, 1000);
     updateDateTime();
 
     // Keyboard shortcut: Space + T or Space + F
-    document.addEventListener('keydown', function(event) {
+    document.addEventListener('keydown', function (event) {
       if (event.code === 'Space') {
         spacePressed = true;
       } else if (spacePressed) {
@@ -113,19 +117,19 @@
         spacePressed = false;
       }
     });
-
-    document.addEventListener('keyup', function(event) {
+    document.addEventListener('keyup', function (event) {
       if (event.code === 'Space') {
         spacePressed = false;
       }
     });
   </script>
-   <footer
-        style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); padding: 8px 16px; font-family: Arial, sans-serif; font-size: 09px; z-index: 1000;">
-        Created by <a href="http://www.sinzn.fun/" style="text-decoration: none; color: #0366d6;"> Shivam Singh </a> |
-        Source available on
-        <a href="https://github.com/sinzn/MyChatApp/
-" target="_blank" style="text-decoration: none; color: #0366d6;">GitHub</a>.
-    </footer>
+
+  <footer
+    style="position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); padding: 8px 16px; font-family: Arial, sans-serif; font-size: 09px; z-index: 1000;">
+    Created by <a href="http://www.sinzn.fun/" style="text-decoration: none; color: #0366d6;">Shivam Singh</a> |
+    Source available on
+    <a href="https://github.com/sinzn/MyChatApp/" target="_blank"
+      style="text-decoration: none; color: #0366d6;">GitHub</a>.
+  </footer>
 </body>
 </html>
